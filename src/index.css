@@ -1,2 +1,36 @@
 @import "tailwindcss";
 @plugin "daisyui";
+
+.input-style {
+  background: #0A0F1E;
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  color: #C9A84C;
+  padding: 12px 14px;
+  border-radius: 10px;
+  outline: none;
+  font-size: 14px;
+  width: 100%;
+}
+
+.input-style::placeholder {
+  color: #9CA3AF;
+}
+
+.input-style:focus {
+  border-color: #C9A84C;
+  box-shadow: 0 0 10px rgba(201,168,76,0.2);
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease;
+}
