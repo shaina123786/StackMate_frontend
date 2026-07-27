@@ -48,7 +48,7 @@ const Body = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#0A0F1E] text-[#C9A84C]">
-        <h2 className="text-xl font-semibold animate-pulse">Loading DevTinder...</h2>
+        <h2 className="text-xl font-semibold animate-pulse">Loading Stackmate...</h2>
       </div>
     );
   }

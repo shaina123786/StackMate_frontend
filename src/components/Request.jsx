@@ -2,7 +2,7 @@ import axios from "axios";
 import React, { useEffect } from "react";
 import { BASE_URL } from "../utils/constant";
 import { useDispatch, useSelector } from "react-redux";
-import { addRequest,removeRequest } from "../utils/requestSlice"; // create this
+import { addRequest, removeRequest } from "../utils/requestSlice";
 
 const Request = () => {
   const request = useSelector((store) => store.request);
@@ -14,7 +14,7 @@ const Request = () => {
         withCredentials: true,
       });
 
-      dispatch(addRequest(res.data.data)); // ✅ IMPORTANT
+      dispatch(addRequest(res.data.data));
     } catch (err) {
       console.log(err);
     }
@@ -29,31 +29,35 @@ const Request = () => {
   if (request.length === 0)
     return <h1 className="text-center mt-10">No Request Found!</h1>;
 
-  const handleRequest = async (status, _id) => {
+  const handleRequest = async (status, requestId) => {
+    // 🟢 1. INSTANT REDUX REMOVE (Immediate Card Gayab Ho Jayega)
+    dispatch(removeRequest(requestId));
+
+    // 2. BACKGROUND API CALL
     try {
       await axios.post(
-  BASE_URL + "/request/review/" + status + "/" + _id,
-  {},
-  { withCredentials: true }
-);
-
-
-        
-      dispatch(removeRequest(_id));
+        BASE_URL + "/request/review/" + status + "/" + requestId,
+        {},
+        { withCredentials: true }
+      );
     } catch (err) {
       console.log(err);
+      // Fail hone par dobara fetch kar sakein
+      fetchRequest();
     }
   };
 
   return (
     <div className="flex flex-col items-center my-10 gap-6">
-      {request.map((request) => {
-        const { _id, firstName, lastName, photoUrl, about, skills } =
-          request.sender;
+      {request.map((reqItem) => {
+        // 🟢 FIX: reqItem._id (Request document ID) for review API & Redux remove
+        const requestId = reqItem._id;
+        const { firstName, lastName, photoUrl, about, skills } =
+          reqItem.sender || {};
 
         return (
           <div
-            key={_id}
+            key={requestId}
             className="w-[450px] bg-[#0f172a] rounded-2xl p-5 flex gap-4 shadow-lg border border-[#C9A84C]/30 hover:shadow-[0_0_25px_rgba(201,168,76,0.25)] transition"
           >
             {/* IMAGE */}
@@ -91,7 +95,7 @@ const Request = () => {
                   </div>
                 )}
 
-                {/* Bio (FIXED) */}
+                {/* Bio */}
                 <p className="text-gray-400 text-sm mt-2 leading-relaxed line-clamp-2">
                   {about && about !== "this is default"
                     ? about
@@ -102,15 +106,15 @@ const Request = () => {
               {/* BUTTONS */}
               <div className="flex justify-end gap-3 mt-3 min-w-[90px]">
                 <button
-                  onClick={() => handleRequest("rejected", _id)}
-                  className="px-4 py-1.5 rounded-lg text-sm font-semibold bg-red-100 text-red-600 hover:bg-red-200 transition"
+                  onClick={() => handleRequest("rejected", requestId)}
+                  className="px-4 py-1.5 rounded-lg text-sm font-semibold bg-red-100 text-red-600 hover:bg-red-200 transition cursor-pointer active:scale-95"
                 >
                   Reject
                 </button>
 
                 <button
-                  onClick={() => handleRequest("accepted", _id)}
-                  className="px-4 py-1.5 rounded-lg text-sm font-semibold bg-green-100 text-green-600 hover:bg-green-200 transition"
+                  onClick={() => handleRequest("accepted", requestId)}
+                  className="px-4 py-1.5 rounded-lg text-sm font-semibold bg-green-100 text-green-600 hover:bg-green-200 transition cursor-pointer active:scale-95"
                 >
                   Accept
                 </button>
