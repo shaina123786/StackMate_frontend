@@ -13,7 +13,7 @@ const Navbar = () => {
   const user = useSelector((store) => store.user);
   const [requests, setRequests] = useState([]);
   const [connections, setConnections] = useState([]);
-  const [msgNotifs, setMsgNotifs] = useState([]); // 🔔 NEW: real-time message notifications
+  const [msgNotifs, setMsgNotifs] = useState([]);
   const [showNotif, setShowNotif] = useState(false);
   const notifRef = useRef();
 
@@ -38,21 +38,18 @@ const Navbar = () => {
           withCredentials: true,
         });
 
-        // 🔔 NEW: DB me save hui (persisted) message notifications bhi laao —
-        // isse logout/login ke baad bhi ye dikhengi
         const msgRes = await axios.get(BASE_URL + "/user/message-notifications", {
           withCredentials: true,
         });
 
         setRequests(reqRes.data.data || []);
-        // Get last 3 connections for dropdown
         setConnections((conRes.data.data || []).reverse().slice(0, 3));
 
         setMsgNotifs(
           (msgRes.data.data || []).map((n) => ({
             type: "message",
             data: n.sender,
-            id: `msg-${n.sender?._id}`, // sender ke hisaab se fixed id — isliye duplicate nahi banega
+            id: `msg-${n.sender?._id}`,
           }))
         );
       } catch (err) {
@@ -65,24 +62,17 @@ const Navbar = () => {
     }
   }, [user]);
 
-  // 🔔 NEW: koi bhi message bheje to bell wale dropdown me bhi turant dikhe
-  // (chahe tum us chat me na bhi ho, poore app me kahin bhi ho)
   useEffect(() => {
-    console.log("🔔 [DEBUG-FRONTEND] Navbar notification-effect ran, user is:", user);
     if (!user) return;
 
     const socket = createSocketConnection();
 
     socket.on("connect", () => {
-      console.log("🔔 [DEBUG-FRONTEND] socket connected:", socket.id, "registering user:", user._id);
       socket.emit("registerUser", user._id);
     });
 
     socket.on("newMessageNotification", (data) => {
-      console.log("🔔 [DEBUG-FRONTEND] newMessageNotification received:", data);
       setMsgNotifs((prev) => {
-        // Isi sender ka purana entry hai to use hata do, phir naye timestamp ke saath
-        // sabse upar daal do — isse ek sender ka hamesha ek hi entry rahega
         const withoutThisSender = prev.filter((n) => n.id !== `msg-${data.senderId}`);
         return [
           {
@@ -115,7 +105,7 @@ const Navbar = () => {
   }, []);
 
   const allNotif = [
-    ...msgNotifs, // 🔔 NEW: sabse naye message notifications sabse upar
+    ...msgNotifs,
     ...requests.map((r) => ({
       type: "request",
       data: r.sender,
@@ -213,7 +203,6 @@ const Navbar = () => {
                             {item.data?.firstName}
                           </span>{" "}
                           <span className="text-gray-300">
-                            {/* 🟢 TOP DROPDOWN TEXT FIX HERE */}
                             {item.type === "request"
                               ? "sent you a request"
                               : item.type === "message"
@@ -267,7 +256,7 @@ const Navbar = () => {
 
             {/* MENU */}
             <ul
-              tabIndex={-1}
+              tabIndex={0}
               className="menu dropdown-content mt-4 w-56 p-2 rounded-xl shadow-xl z-50"
               style={{
                 background: "#111827",
@@ -282,12 +271,16 @@ const Navbar = () => {
                   👤 Profile
                 </Link>
               </li>
-              <Link 
-    to="/feed" 
-    className="px-4 py-2 hover:bg-[#C9A84C]/20 text-white hover:text-[#C9A84C] font-semibold rounded-xl transition flex items-center gap-2"
-  >
-    📰 Feed
-  </Link>
+
+              {/* 🟢 FEED LINK FIXED WITH <li> TAG */}
+              <li>
+                <Link
+                  to="/feed"
+                  className="text-[#E8D5A3] hover:bg-[#C9A84C]/10 rounded-lg py-2.5"
+                >
+                  📰 Feed
+                </Link>
+              </li>
 
               <li>
                 <Link
