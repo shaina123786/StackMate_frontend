@@ -6,7 +6,7 @@ import { removeFeed } from "../utils/feedSlice";
 
 const UserCard = ({ user, isEdit, onImageClick }) => {
   const dispatch = useDispatch();
-  const [swipeClass, setSwipeClass] = useState(""); // 🟢 SWIPE DIRECTION STATE
+  const [swipeClass, setSwipeClass] = useState("");
 
   const { _id, age, Gender, skills, about, firstName, lastName, photoUrl } =
     user || {};
@@ -14,37 +14,37 @@ const UserCard = ({ user, isEdit, onImageClick }) => {
   const firstLetter = firstName ? firstName.charAt(0).toUpperCase() : "?";
 
   const handleSendReq = async (status, receiver) => {
-    // 1. Swipe Animation Trigger Karo
+    // 1. Instantly apply animation class
     if (status === "ignored") {
-      setSwipeClass("-translate-x-[150%] -rotate-12 opacity-0"); // Left Swipe
+      setSwipeClass("-translate-x-[150%] -rotate-12 opacity-0");
     } else if (status === "interested") {
-      setSwipeClass("translate-x-[150%] rotate-12 opacity-0"); // Right Swipe
+      setSwipeClass("translate-x-[150%] rotate-12 opacity-0");
     }
 
-    // 2. Animation khatam hote hi API Call + Redux Remove
-    setTimeout(async () => {
-      try {
-        await axios.post(
-          BASE_URL + "/request/send/" + status + "/" + receiver,
+    // 2. Wait 250ms for smooth exit transition then dispatch and reset
+    setTimeout(() => {
+      // Background API call without blocking UI
+      axios
+        .post(
+          `${BASE_URL}/request/send/${status}/${receiver}`,
           {},
           { withCredentials: true }
-        );
-        dispatch(removeFeed(receiver));
-        setSwipeClass(""); // Reset for next user
-      } catch (err) {
-        console.log(err);
-        setSwipeClass("");
-      }
-    }, 300); // 300ms smooth transition time
+        )
+        .catch((err) => console.log("Request Error:", err));
+
+      // Instant Redux Remove
+      dispatch(removeFeed(receiver));
+      setSwipeClass(""); 
+    }, 250);
   };
 
   return (
     <div
-      className={`w-[340px] min-h-[440px] bg-[#111827] rounded-[30px] p-6 flex flex-col justify-between items-center border border-[#C9A84C]/30 transition-all duration-300 transform hover:scale-[1.02] shadow-[0_10px_40px_rgba(0,0,0,0.6)] hover:shadow-[0_0_40px_rgba(201,168,76,0.25)] ${swipeClass}`}
+      className={`w-[340px] min-h-[440px] bg-[#111827] rounded-[30px] p-6 flex flex-col justify-between items-center border border-[#C9A84C]/30 transition-all duration-300 ease-in-out transform hover:scale-[1.02] shadow-[0_10px_40px_rgba(0,0,0,0.6)] hover:shadow-[0_0_40px_rgba(201,168,76,0.25)] ${swipeClass}`}
     >
-      {/* 🟢 TOP CONTENT CONTAINER */}
+      {/* TOP CONTENT CONTAINER */}
       <div className="flex flex-col items-center w-full">
-        {/* 📸 AVATAR CIRCLE */}
+        {/* AVATAR CIRCLE */}
         <div className="relative my-3">
           {photoUrl ? (
             <img
@@ -71,7 +71,7 @@ const UserCard = ({ user, isEdit, onImageClick }) => {
           )}
         </div>
 
-        {/* 🟢 NAME & DETAILS */}
+        {/* NAME & DETAILS */}
         <div className="text-center mt-7 w-full">
           <h2 className="text-2xl font-bold text-[#C9A84C] tracking-wide">
             {firstName || "First Name"} {lastName || ""}
@@ -107,19 +107,19 @@ const UserCard = ({ user, isEdit, onImageClick }) => {
         </div>
       </div>
 
-      {/* 🟢 ACTION BUTTONS */}
+      {/* ACTION BUTTONS */}
       {!isEdit && (
         <div className="flex justify-between mt-5 gap-3 w-full">
           <button
             onClick={() => handleSendReq("ignored", _id)}
-            className="w-1/2 py-2 rounded-xl bg-red-100 text-red-600 font-semibold hover:bg-red-200 transition cursor-pointer"
+            className="w-1/2 py-2 rounded-xl bg-red-100 text-red-600 font-semibold hover:bg-red-200 transition cursor-pointer active:scale-95"
           >
             Ignore
           </button>
 
           <button
             onClick={() => handleSendReq("interested", _id)}
-            className="w-1/2 py-2 rounded-xl bg-green-100 text-green-600 font-semibold hover:bg-green-200 transition cursor-pointer"
+            className="w-1/2 py-2 rounded-xl bg-green-100 text-green-600 font-semibold hover:bg-green-200 transition cursor-pointer active:scale-95"
           >
             Interested
           </button>
