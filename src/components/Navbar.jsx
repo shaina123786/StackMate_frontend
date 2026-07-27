@@ -282,6 +282,12 @@ const Navbar = () => {
                   👤 Profile
                 </Link>
               </li>
+              <Link 
+    to="/feed" 
+    className="px-4 py-2 hover:bg-[#C9A84C]/20 text-white hover:text-[#C9A84C] font-semibold rounded-xl transition flex items-center gap-2"
+  >
+    📰 Feed
+  </Link>
 
               <li>
                 <Link
